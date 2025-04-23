@@ -3,3 +3,4 @@ mplfinance
 tensorflow
 yfinance
 fastapi[standard]
+scikit-learn
