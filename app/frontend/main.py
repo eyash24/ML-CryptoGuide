@@ -37,7 +37,7 @@ if coin_ui != "---Select a Coin---":
     if st.button("Forecast & Recommend!"):
         coin = coin_map[coin_ui]
         # Replace with your actual FastAPI URL
-        api_url = f"http://localhost:8000/forecast/{coin}/{current_amt}"
+        api_url = f"https://ml-cryptoguide-backend.onrender.com/forecast/{coin}/{current_amt}"
 
         try:
             response = requests.get(api_url)
