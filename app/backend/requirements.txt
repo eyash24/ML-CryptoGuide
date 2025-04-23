@@ -1,0 +1,5 @@
+numpy
+mplfinance
+tensorflow
+yfinance
+fastapi[standard]

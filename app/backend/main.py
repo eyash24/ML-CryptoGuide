@@ -15,6 +15,11 @@ class Response(BaseModel):
     rec_single: Optional[str] = None
     error: Optional[str] = None
 
+@api.get("/run")
+def root():
+    return {"message": "FastAPI is running!"}
+
+
 def numpy_to_python(obj):
     # Recursive conversion of numpy types to native types
     if isinstance(obj, dict):
@@ -30,9 +35,8 @@ def numpy_to_python(obj):
 def get_optimal_prediction(coin: str, current_hold: float):
     try:
         forecast_multicoin, forecast_single, current_values = forecast(coin=coin)
-        current_price = float(current_values)  # cast numpy.float32 to native float if needed
+        current_price = float(current_values) 
 
-        # convert forecast dictionaries (if they contain numpy types)
         forecast_multicoin = numpy_to_python(forecast_multicoin)
         forecast_single = numpy_to_python(forecast_single)
 
