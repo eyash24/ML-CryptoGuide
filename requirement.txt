@@ -1,4 +1,7 @@
 pandas
 numpy
 mplfinance
-
+tensorflow
+yfinance
+fastapi[standard]
+streamlit
