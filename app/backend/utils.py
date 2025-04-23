@@ -6,6 +6,7 @@ warnings.filterwarnings('ignore')
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Dropout
 import pickle
+import os
 
 # backend
 # loading single coin models
@@ -20,62 +21,123 @@ def coin_model_instance():
     return model_coin
 
 
+# def reload_model(coin):
+#     window_size = 60
+#     model_paths = [
+#         '/Users/eyash.p24/Desktop/miscellaneous/Intel Project/app/checkpoints/btc_checkpoint.weights.h5',
+#         '/Users/eyash.p24/Desktop/miscellaneous/Intel Project/app/checkpoints/eth_checkpoint.weights.h5',
+#         '/Users/eyash.p24/Desktop/miscellaneous/Intel Project/app/checkpoints/ltc_checkpoint.weights.h5'
+#     ]
+
+#     model_multicoin = Sequential(
+#         [LSTM(50, return_sequences=True, input_shape=(window_size, 5)),
+#         Dropout(0.2),
+#         LSTM(50, return_sequences=False),
+#         Dropout(0.2),
+#         Dense(units=5)]
+#     )
+#     model_multicoin.load_weights('/Users/eyash.p24/Desktop/miscellaneous/Intel Project/app/checkpoints/merge_checkpointv2.weights.h5')
+
+#     coin_id = -1
+#     if coin == 'BTC':
+#         coin_id = 0
+#     elif coin == "LTC":
+#         coin_id = 1
+#     elif coin == 'ETH':
+#         coin_id = 2
+
+#     coin_model = coin_model_instance()
+#     coin_model.load_weights(model_paths[coin_id])
+#     # print(model_multicoin.summary())
+#     # print(coin_model.summary())
+#     return model_multicoin, coin_model
+
+
+# def reload_scaler(coin):
+#     coin_paths = [
+#         '/Users/eyash.p24/Desktop/miscellaneous/Intel Project/app/checkpoints/btc_scaler.pkl',
+#         '/Users/eyash.p24/Desktop/miscellaneous/Intel Project/app/checkpoints/ltc_scaler.pkl',
+#         '/Users/eyash.p24/Desktop/miscellaneous/Intel Project/app/checkpoints/eth_scaler.pkl',
+#     ]
+
+#     # multi-coin
+#     with open('/Users/eyash.p24/Desktop/miscellaneous/Intel Project/app/checkpoints/merge_scalerv2.pkl', 'rb') as f:
+#         merge_scaler = pickle.load(f)
+#         f.close()
+    
+#     # single coin
+#     coin_id = -1
+#     if coin == 'BTC':
+#         coin_id = 0
+#     elif coin == "LTC":
+#         coin_id = 1
+#     elif coin == 'ETH':
+#         coin_id = 2
+    
+#     with open(coin_paths[coin_id], 'rb') as f_coin:
+#         coin_scaler = pickle.load(f_coin)
+#         f_coin.close()
+
+#     return merge_scaler, coin_scaler
+
 def reload_model(coin):
     window_size = 60
-    model_paths = [
-        '/Users/eyash.p24/Desktop/miscellaneous/Intel Project/app/checkpoints/btc_checkpoint.weights.h5',
-        '/Users/eyash.p24/Desktop/miscellaneous/Intel Project/app/checkpoints/eth_checkpoint.weights.h5',
-        '/Users/eyash.p24/Desktop/miscellaneous/Intel Project/app/checkpoints/ltc_checkpoint.weights.h5'
-    ]
 
-    model_multicoin = Sequential(
-        [LSTM(50, return_sequences=True, input_shape=(window_size, 5)),
+    # Define relative paths
+    base_path = os.path.dirname(__file__)
+    checkpoint_dir = os.path.join(base_path, "checkpoints")
+
+    model_paths = {
+        'BTC': os.path.join(checkpoint_dir, 'btc_checkpoint.weights.h5'),
+        'ETH': os.path.join(checkpoint_dir, 'eth_checkpoint.weights.h5'),
+        'LTC': os.path.join(checkpoint_dir, 'ltc_checkpoint.weights.h5')
+    }
+
+    merge_model_path = os.path.join(checkpoint_dir, 'merge_checkpointv2.weights.h5')
+
+    # Load multicoin model
+    model_multicoin = Sequential([
+        LSTM(50, return_sequences=True, input_shape=(window_size, 5)),
         Dropout(0.2),
         LSTM(50, return_sequences=False),
         Dropout(0.2),
-        Dense(units=5)]
-    )
-    model_multicoin.load_weights('/Users/eyash.p24/Desktop/miscellaneous/Intel Project/app/checkpoints/merge_checkpointv2.weights.h5')
+        Dense(units=5)
+    ])
+    model_multicoin.load_weights(merge_model_path)
 
-    coin_id = -1
-    if coin == 'BTC':
-        coin_id = 0
-    elif coin == "LTC":
-        coin_id = 1
-    elif coin == 'ETH':
-        coin_id = 2
+    # Load single-coin model
+    coin = coin.upper()
+    if coin not in model_paths:
+        raise ValueError(f"Unsupported coin: {coin}")
 
     coin_model = coin_model_instance()
-    coin_model.load_weights(model_paths[coin_id])
-    # print(model_multicoin.summary())
-    # print(coin_model.summary())
+    coin_model.load_weights(model_paths[coin])
+
     return model_multicoin, coin_model
 
-
 def reload_scaler(coin):
-    coin_paths = [
-        '/Users/eyash.p24/Desktop/miscellaneous/Intel Project/app/checkpoints/btc_scaler.pkl',
-        '/Users/eyash.p24/Desktop/miscellaneous/Intel Project/app/checkpoints/ltc_scaler.pkl',
-        '/Users/eyash.p24/Desktop/miscellaneous/Intel Project/app/checkpoints/eth_scaler.pkl',
-    ]
+    # Get the current directory (where this file is located)
+    base_path = os.path.dirname(__file__)
+    checkpoint_dir = os.path.join(base_path, "checkpoints")
 
-    # multi-coin
-    with open('/Users/eyash.p24/Desktop/miscellaneous/Intel Project/app/checkpoints/merge_scalerv2.pkl', 'rb') as f:
+    coin_paths = {
+        "BTC": os.path.join(checkpoint_dir, "btc_scaler.pkl"),
+        "LTC": os.path.join(checkpoint_dir, "ltc_scaler.pkl"),
+        "ETH": os.path.join(checkpoint_dir, "eth_scaler.pkl")
+    }
+
+    # Load multi-coin scaler
+    merge_scaler_path = os.path.join(checkpoint_dir, "merge_scalerv2.pkl")
+    with open(merge_scaler_path, 'rb') as f:
         merge_scaler = pickle.load(f)
-        f.close()
+
+    # Load specific coin scaler
+    coin_scaler_path = coin_paths.get(coin.upper())
+    if not coin_scaler_path:
+        raise ValueError(f"Invalid coin: {coin}")
     
-    # single coin
-    coin_id = -1
-    if coin == 'BTC':
-        coin_id = 0
-    elif coin == "LTC":
-        coin_id = 1
-    elif coin == 'ETH':
-        coin_id = 2
-    
-    with open(coin_paths[coin_id], 'rb') as f_coin:
+    with open(coin_scaler_path, 'rb') as f_coin:
         coin_scaler = pickle.load(f_coin)
-        f_coin.close()
 
     return merge_scaler, coin_scaler
 
