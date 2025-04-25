@@ -2,3 +2,4 @@ API/
 Dataset/
 documents/
 IDR-CryptoGuides-DataSourceIdentification.pdf
+app/.streamlit/secrets.toml
